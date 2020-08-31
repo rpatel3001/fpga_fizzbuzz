@@ -5,7 +5,7 @@
 // Fixed 8n1 scheme, LSB first
 
 module uart_tx #(
-    parameter CLKS_PER_BIT = 10)
+    parameter CLKS_PER_BIT = 2)
   ( input wire clk,
     input wire rst,
 
