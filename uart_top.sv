@@ -10,7 +10,7 @@ module uart_top(
     wire rx_valid;
 
     reg [7:0] tx_data;
-    wire tx_valid;
+    reg tx_valid;
     
     uart_rx #(.CLKS_PER_BIT(2)) uart_rx_inst (
         .clk(clk), 
@@ -28,7 +28,23 @@ module uart_top(
         .o_tx_busy(tx_busy), 
         .o_tx_data(tx_phy));
 
-    assign tx_data = rx_data;
-    assign tx_valid = rx_valid;
+    reg [7:0] tx_char = "A";
+    always @(posedge clk) begin
+        if(rst) begin
+
+        end else begin
+            if(rx_valid) begin
+                tx_valid <= 1;
+                if(rx_data == "c") begin
+                    tx_data <= tx_char;
+                end else begin
+                    tx_data <= rx_data;
+                end
+            end else begin
+                tx_valid <= 0;
+                tx_data <= 0;
+            end
+        end
+    end
 
 endmodule

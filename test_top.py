@@ -31,12 +31,12 @@ async def rx_char(dut):
             break
         await FallingEdge(dut.clk)
 
-    return int("".join(outchar), 2)
+    return chr(int("".join(outchar), 2))
 
 
 async def tx_char(dut, inchar):
     """Transmit a character on 1 bit UART bus."""
-    inval = bin(inchar * 2 + 512)[2:]
+    inval = bin(ord(inchar) * 2 + 512)[2:]
     for j in reversed(range(len(inval))):
         for k in range(CLKS_PER_BIT):
             await FallingEdge(dut.clk)
@@ -54,7 +54,7 @@ async def heartbeat(dut):
 @cocotb.test()
 async def test_top_simple(dut):
     """Test UART loopback."""
-    NUM_TESTS = 1
+    NUM_TESTS = 10
 
     # cocotb.fork(heartbeat(dut))
     clock = Clock(dut.clk, 10, units="us")  # Create a 10us period clock on port clk
@@ -66,12 +66,12 @@ async def test_top_simple(dut):
     dut.rst <= 0
 
     for i in range(NUM_TESTS):
-        inval = random.randint(0, 255)
-        cocotb.log.info("random value: %s" % bin(inval + 256)[3:])
+        inval = chr(random.randint(33, 126))
+        cocotb.log.info("random value: %s" % inval)
 
         cocotb.fork(tx_char(dut, inval))
 
         outval = await rx_char(dut)
 
-        cocotb.log.info("Expected %s and got %s on iteration %d" % (bin(inval + 256)[3:], bin(outval + 256)[3:], i))
+        cocotb.log.info("Expected %s and got %s on iteration %d" % (inval, outval, i))
         assert inval == outval, "output was incorrect on the {}th cycle".format(i)
