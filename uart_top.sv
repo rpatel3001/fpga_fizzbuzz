@@ -1,3 +1,8 @@
+// uart_top.sv
+// Rajan Patel
+
+// UART based FizzBuzz
+
 module uart_top(
     input clk,
     input rst,
@@ -6,11 +11,16 @@ module uart_top(
     output tx_busy,
     output tx_phy);
 
+    localparam CNT_MAX = 8;
+    localparam CNT_BITS = $clog2(CNT_MAX + 1);
+
     wire [7:0] rx_data;
     wire rx_valid;
 
     reg [7:0] tx_data;
     reg tx_valid;
+
+    reg [CNT_BITS:0] cnt = 0;
     
     uart_rx #(.CLKS_PER_BIT(2)) uart_rx_inst (
         .clk(clk), 
@@ -28,17 +38,28 @@ module uart_top(
         .o_tx_busy(tx_busy), 
         .o_tx_data(tx_phy));
 
-    reg [7:0] tx_char = "A";
     always @(posedge clk) begin
         if(rst) begin
-
+            tx_data <= 0;
+            tx_valid <= 0;
+            cnt <= 0;
         end else begin
             if(rx_valid) begin
-                tx_valid <= 1;
-                if(rx_data == "c") begin
-                    tx_data <= tx_char;
+                if(rx_data == "r") begin
+                    tx_valid <= 1;
+                    tx_data <= "0";
+                    cnt <= 1;
+                end else if (rx_data == "n") begin
+                    tx_valid <= 1;
+                    tx_data <= "0" + cnt;
+                    if(cnt == CNT_MAX) begin
+                        cnt <= 0;
+                    end else begin
+                        cnt <= cnt + 1;
+                    end
                 end else begin
-                    tx_data <= rx_data;
+                    tx_valid <= 0;
+                    tx_data <= 0;
                 end
             end else begin
                 tx_valid <= 0;

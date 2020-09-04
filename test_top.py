@@ -1,6 +1,5 @@
 """Top level module test."""
 
-import random
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge, Timer
@@ -43,8 +42,17 @@ async def tx_char(dut, inchar):
         dut.rx_phy <= int(inval[j])
 
 
+async def uart_transact(dut, inchar, expchar):
+    """Send then receive a character over UART."""
+    cocotb.log.info("Sending %s" % (inchar))
+    await tx_char(dut, inchar)
+    outchar = await rx_char(dut)
+    cocotb.log.info("Expected %s, received %s" % (expchar, outchar))
+    assert expchar == outchar, "Expected %s, got %s" % (bin(ord(expchar)), bin(ord(outchar)))
+
+
 async def heartbeat(dut):
-    """Print variable on a timer to debug."""
+    """Print variables on a timer to debug."""
     cocotb.log.info("heartbeat started")
     while 1:
         await Timer(10, units="us")
@@ -54,24 +62,33 @@ async def heartbeat(dut):
 @cocotb.test()
 async def test_top_simple(dut):
     """Test UART loopback."""
-    NUM_TESTS = 10
+    NUM_TESTS = 1
 
     # cocotb.fork(heartbeat(dut))
-    clock = Clock(dut.clk, 10, units="us")  # Create a 10us period clock on port clk
-    cocotb.fork(clock.start())  # Start the clock
-    await FallingEdge(dut.clk)  # Synchronize with the clock
-    dut.rst <= 1
+    clock = Clock(dut.clk, 10, units="us")
+    cocotb.fork(clock.start())
     dut.rx_phy <= 1
     await FallingEdge(dut.clk)
-    dut.rst <= 0
 
     for i in range(NUM_TESTS):
-        inval = chr(random.randint(33, 126))
-        cocotb.log.info("random value: %s" % inval)
-
-        cocotb.fork(tx_char(dut, inval))
-
-        outval = await rx_char(dut)
-
-        cocotb.log.info("Expected %s and got %s on iteration %d" % (inval, outval, i))
-        assert inval == outval, "output was incorrect on the {}th cycle".format(i)
+        dut.rst <= 1
+        await FallingEdge(dut.clk)
+        dut.rst <= 0
+        await FallingEdge(dut.clk)
+        await uart_transact(dut, "n", "0")
+        await uart_transact(dut, "n", "1")
+        await uart_transact(dut, "n", "2")
+        await uart_transact(dut, "n", "3")
+        await uart_transact(dut, "r", "0")
+        await uart_transact(dut, "n", "1")
+        await uart_transact(dut, "n", "2")
+        await uart_transact(dut, "n", "3")
+        await uart_transact(dut, "n", "4")
+        await uart_transact(dut, "n", "5")
+        await uart_transact(dut, "n", "6")
+        await uart_transact(dut, "n", "7")
+        await uart_transact(dut, "n", "8")
+        await uart_transact(dut, "n", "0")
+        await uart_transact(dut, "n", "1")
+        await uart_transact(dut, "n", "2")
+        await uart_transact(dut, "n", "3")

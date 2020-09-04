@@ -4,6 +4,8 @@ TOPLEVEL_LANG ?= verilog
 SIM ?= verilator
 TEST ?= TOP
 
+EXTRA_ARGS += -Wno-WIDTH --timescale 1us/1us
+
 ifdef WAVE
   EXTRA_ARGS += --trace --trace-threads 1
 endif
