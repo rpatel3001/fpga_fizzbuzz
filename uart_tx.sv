@@ -30,7 +30,7 @@ module uart_tx #(
     case(state)
       default : begin
         o_tx_data = 1;
-        o_tx_busy = 0;
+        o_tx_busy = i_tx_valid;
       end
       TX_START : begin
         o_tx_data = 0;
