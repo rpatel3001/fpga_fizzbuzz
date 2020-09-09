@@ -3,13 +3,14 @@
 
 // UART based FizzBuzz
 
-module uart_top(
-    input clk,
+module uart_top
+  ( input clk,
     input rst,
     input rx_phy,
     output rx_busy,
     output tx_busy,
-    output tx_phy);
+    output tx_phy
+  );
 
     localparam CNT_MAX = 'd17;
     localparam CNT_DIGITS = int'($ceil($log10(CNT_MAX + 1)));

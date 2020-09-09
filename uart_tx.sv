@@ -4,9 +4,9 @@
 // Simple UART transmitter
 // Fixed 8n1 scheme, LSB first
 
-module uart_tx #(
-    parameter CLKS_PER_BIT = 2)
-  ( input wire clk,
+module uart_tx
+  #(parameter CLKS_PER_BIT = 2) (
+    input wire clk,
     input wire rst,
 
     input wire [7:0] i_tx_data,

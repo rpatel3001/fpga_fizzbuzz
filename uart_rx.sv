@@ -4,9 +4,9 @@
 // Simple UART receiver
 // Fixed 8n1 scheme, LSB first
 
-module uart_rx #(
-    parameter CLKS_PER_BIT = 2)
-  ( input wire clk,
+module uart_rx
+  #(parameter CLKS_PER_BIT = 2) (
+    input wire clk,
     input wire rst,
 
     input wire i_rx_data,
