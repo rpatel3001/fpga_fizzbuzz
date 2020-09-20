@@ -1,5 +1,6 @@
 __pycache__/*
 sim_build/*
+uart_test/*
 results.xml
 *.vcd
 *.fst 
