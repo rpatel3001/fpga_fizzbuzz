@@ -26,7 +26,7 @@ module uart_tx
   reg unsigned [2:0] tx_cnt = 0;
   reg [7:0] tx_data_reg = 0;
 
-  always @(state) begin
+  always @(*) begin
     case(state)
       default : begin
         o_tx_data = 1;
