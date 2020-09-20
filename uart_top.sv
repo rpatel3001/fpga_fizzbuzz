@@ -4,7 +4,8 @@
 // UART based FizzBuzz
 
 module uart_top
-  ( input clk,
+  #(parameter CLKS_PER_BIT = 2) ( 
+    input clk,
     input rst,
     input rx_phy,
     output rx_busy,
@@ -12,9 +13,9 @@ module uart_top
     output tx_phy
   );
 
-  localparam CNT_MAX = 'd17;
-  localparam CNT_DIGITS = int'($ceil($log10(CNT_MAX + 1)));
-  localparam BCD_CNT_BITS = CNT_DIGITS * 4;
+  localparam integer CNT_MAX = 'd17;
+  localparam integer CNT_DIGITS = $ceil($log10(CNT_MAX + 1));
+  localparam integer BCD_CNT_BITS = CNT_DIGITS * 4;
   localparam [BCD_CNT_BITS-1:0] BCD_CNT_MAX = 'h17;
 
   wire [7:0] rx_data;
@@ -28,10 +29,11 @@ module uart_top
   reg inc_cnt = 0;
   reg [CNT_DIGITS-1:0][3:0] bcd_cnt = 0;
 
+  reg [2:0] tx_chars = 0;
   reg [2:0] tx_cnt = 0;
   reg [CNT_DIGITS-1:0][7:0] tx_buf = 0;
     
-  uart_rx #(.CLKS_PER_BIT(2)) uart_rx_inst (
+  uart_rx #(.CLKS_PER_BIT(CLKS_PER_BIT)) uart_rx_inst (
     .clk(clk), 
     .rst(rst), 
     .i_rx_data(rx_phy), 
@@ -39,7 +41,7 @@ module uart_top
     .o_rx_busy(rx_busy), 
     .o_rx_data(rx_data));
 
-  uart_tx #(.CLKS_PER_BIT(2)) uart_tx_inst (
+  uart_tx #(.CLKS_PER_BIT(CLKS_PER_BIT)) uart_tx_inst (
     .clk(clk), 
     .rst(rst), 
     .i_tx_data(tx_data), 
@@ -57,7 +59,7 @@ module uart_top
         bcd_cnt <= 0;
       end else begin
         bcd_cnt[0] <= bcd_cnt[0] + 1;
-        for (int i = 0; i < CNT_DIGITS; i++) begin
+        for (int i = 0; i < CNT_DIGITS - 1; i++) begin
           if(bcd_cnt[i] + 1 == 10) begin
             bcd_cnt[i+1] <= bcd_cnt[i+1] + 1;
             bcd_cnt[i] <= 0;
@@ -71,7 +73,9 @@ module uart_top
     tx_valid <= 0;
     tx_data <= 0;
     if(!tx_busy) begin
-      if(tx_cnt != 0) begin
+      if(tx_cnt == 0) begin
+        tx_cnt <= tx_chars;
+      end else begin
         tx_data <= tx_buf[tx_cnt - 1];
         tx_valid <= 1;
         tx_cnt <= tx_cnt - 1;
@@ -82,17 +86,19 @@ module uart_top
   always @(posedge clk) begin
     if(rst) begin
       tx_buf <= 0;
+      tx_chars <= 0;
     end else begin
+      tx_chars <= 0;
       if(tx_go) begin
         tx_buf <= 0;
         if(rst_cnt || bcd_cnt == 0) begin
-          tx_cnt <= 1;
+          tx_chars <= 1;
           tx_buf[0] <= "0";
         end else begin
           for (int i = 0; i < CNT_DIGITS; i++) begin
             tx_buf[i] <= "0" + bcd_cnt[i];
             if(bcd_cnt[i] != 0) begin
-              tx_cnt <= i + 1;
+              tx_chars <= i + 1;
             end
           end
         end

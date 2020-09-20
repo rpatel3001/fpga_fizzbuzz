@@ -2,8 +2,8 @@ module hw_wrapper(
     input sysclk,
     input [1:0] sw,
     input [3:0] btn,
-    input rx_phy,
-    output tx_phy,
+    input uart_rx,
+    output uart_tx,
     output [3:0] led);
 
     uart_top #(.CLKS_PER_BIT(125000000/115200))

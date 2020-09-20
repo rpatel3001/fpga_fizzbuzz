@@ -38,7 +38,7 @@ module uart_rx
 
   always @(*) begin
     case(state)
-      IDLE : begin
+      default : begin
         o_rx_busy = 0;
         o_rx_valid = 0;
         o_rx_data = 0;
